@@ -22,7 +22,7 @@ CURRENTDIR=${PWD}
 BINDIR="${CURRENTDIR}/bin"
 
 # Target coreutils (tested version)
-COREUTILS="coreutils-9.3"
+COREUTILS="coreutils-9.4"
 
 # required on debian
 # Can be commented-out after first run
@@ -49,7 +49,6 @@ rm ${CURRENTDIR}/bin/*
 # Extract Coreutils
 cd ${CURRENTDIR}
 tar -xvf ${COREUTILS}.tar.xz
-
 
 # PRE-REQUISITE - CAN I BUILD STOCK CORE UTILS?
 # COMMENT WHEN SUCCESSFULL
@@ -90,8 +89,6 @@ cd ${CURRENTDIR}/${COREUTILS}/m4
 cp cu-progs.m4 cu-progs.m4.org
 patch cu-progs.m4 ${CURRENTDIR}/src/cu-progs.m4.patch
 
-#exit
-
 # Combine version number from coreutils and securecopy
 version_crc=$( cat ${CURRENTDIR}/.version )
 version_gnu=$( cat ${CURRENTDIR}/${COREUTILS}/.version )
@@ -107,6 +104,8 @@ sed -i "s/m4_esyscmd(\[build-aux\/git-version-gen .tarball-version\])/${version}
 # Configure
 cd ${CURRENTDIR}/${COREUTILS}
 export FORCE_UNSAFE_CONFIGURE=1
+export CFLAGS="-static"
+export LDFLAGS="-static"
 ./configure
 make
 
