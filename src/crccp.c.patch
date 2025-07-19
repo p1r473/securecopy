@@ -1,13 +1,6 @@
---- /home/ijntema/programming/securecopy/core-utils-based/V9.3.0-beta/coreutils-9.3/src/cp.c	2023-04-10 12:14:08.000000000 +0200
-+++ /home/ijntema/programming/securecopy/core-utils-based/V9.3.0-beta/coreutils-9.3/src/crccp.c	2023-04-29 19:42:51.173332110 +0200
-@@ -31,26 +31,28 @@
- #include "error.h"
- #include "filenamecat.h"
- #include "ignore-value.h"
- #include "quote.h"
- #include "stat-time.h"
- #include "targetdir.h"
- #include "utimens.h"
+--- cp.c
++++ crccp.c
+@@ -38,11 +38,13 @@
  #include "acl.h"
  
  /* The official name of this program (e.g., no 'g' prefix).  */
@@ -16,52 +9,23 @@
 +#define PROGRAM_NAME "crccp"
  
  #define AUTHORS \
-   proper_name ("Torbjorn Granlund"), \
+   proper_name_lite ("Torbjorn Granlund", "Torbj\303\266rn Granlund"), \
    proper_name ("David MacKenzie"), \
 -  proper_name ("Jim Meyering")
 +  proper_name ("Jim Meyering"), \
 +  proper_name ("Checksum functionality only: Hans IJntema")
  
  /* Used by do_copy, make_dir_parents_private, and re_protect
-    to keep a list of leading directories whose protections
-    need to be fixed after copying. */
- struct dir_attr
- {
-   struct stat st;
-   bool restore_mode;
-   size_t slash_offset;
-   struct dir_attr *next;
-@@ -111,20 +113,22 @@
-   UPDATE_ALL, UPDATE_NONE, UPDATE_OLDER,
- };
- ARGMATCH_VERIFY (update_type_string, update_type);
- 
- static struct option const long_opts[] =
- {
-   {"archive", no_argument, NULL, 'a'},
-   {"attributes-only", no_argument, NULL, ATTRIBUTES_ONLY_OPTION},
-   {"backup", optional_argument, NULL, 'b'},
-   {"copy-contents", no_argument, NULL, COPY_CONTENTS_OPTION},
+@@ -114,6 +116,8 @@
+   {"attributes-only", no_argument, nullptr, ATTRIBUTES_ONLY_OPTION},
+   {"backup", optional_argument, nullptr, 'b'},
+   {"copy-contents", no_argument, nullptr, COPY_CONTENTS_OPTION},
 +  /* HIJN */
-+  {"crc", optional_argument, NULL, 'c'},
-   {"debug", no_argument, NULL, DEBUG_OPTION},
-   {"dereference", no_argument, NULL, 'L'},
-   {"force", no_argument, NULL, 'f'},
-   {"interactive", no_argument, NULL, 'i'},
-   {"link", no_argument, NULL, 'l'},
-   {"no-clobber", no_argument, NULL, 'n'},
-   {"no-dereference", no_argument, NULL, 'P'},
-   {"no-preserve", required_argument, NULL, NO_PRESERVE_ATTRIBUTES_OPTION},
-   {"no-target-directory", no_argument, NULL, 'T'},
-   {"one-file-system", no_argument, NULL, 'x'},
-@@ -166,20 +170,25 @@
- 
-       emit_mandatory_arg_note ();
- 
-       fputs (_("\
-   -a, --archive                same as -dR --preserve=all\n\
-       --attributes-only        don't copy the file data, just the attributes\n\
-       --backup[=CONTROL]       make a backup of each existing destination file\
++  {"crc", optional_argument, nullptr, 'c'},
+   {"debug", no_argument, nullptr, DEBUG_OPTION},
+   {"dereference", no_argument, nullptr, 'L'},
+   {"force", no_argument, nullptr, 'f'},
+@@ -170,6 +174,11 @@
  \n\
    -b                           like --backup but does not accept an argument\n\
        --copy-contents          copy contents of special files when recursive\n\
@@ -73,21 +37,7 @@
    -d                           same as --no-dereference --preserve=links\n\
  "), stdout);
        fputs (_("\
-       --debug                  explain how a file is copied.  Implies -v\n\
- "), stdout);
-       fputs (_("\
-   -f, --force                  if an existing destination file cannot be\n\
-                                  opened, remove it and try again (this option\n\
-                                  is ignored when the -n option is also used)\n\
-   -i, --interactive            prompt before overwrite (overrides a previous -n\
-@@ -806,20 +815,24 @@
-     }
- 
-   return ok;
- }
- 
- static void
- cp_option_init (struct cp_options *x)
+@@ -826,6 +835,10 @@
  {
    cp_options_default (x);
    x->copy_as_regular = true;
@@ -98,45 +48,17 @@
    x->dereference = DEREF_UNDEFINED;
    x->unlink_dest_before_opening = false;
    x->unlink_dest_after_failed_open = false;
-   x->hard_link = false;
-   x->interactive = I_UNSPECIFIED;
-   x->move_mode = false;
-   x->install_mode = false;
-   x->one_file_system = false;
-   x->reflink_mode = REFLINK_AUTO;
- 
-@@ -971,21 +984,22 @@
-   set_program_name (argv[0]);
-   setlocale (LC_ALL, "");
-   bindtextdomain (PACKAGE, LOCALEDIR);
-   textdomain (PACKAGE);
- 
-   atexit (close_stdin);
- 
+@@ -995,7 +1008,8 @@
    selinux_enabled = (0 < is_selinux_enabled ());
    cp_option_init (&x);
  
 -  while ((c = getopt_long (argc, argv, "abdfHilLnprst:uvxPRS:TZ",
 +  /* HIJN */
 +  while ((c = getopt_long (argc, argv, "abc::dfHilLnprst:uvxPRS:TZ",
-                            long_opts, NULL))
+                            long_opts, nullptr))
           != -1)
      {
-       switch (c)
-         {
-         case SPARSE_OPTION:
-           x.sparse_mode = XARGMATCH ("--sparse", optarg,
-                                      sparse_type_string, sparse_type);
-           break;
- 
-@@ -1011,20 +1025,48 @@
-           x.reduce_diagnostics = true;
-           x.recursive = true;
-           break;
- 
-         case 'b':
-           make_backups = true;
-           if (optarg)
+@@ -1036,6 +1050,34 @@
              version_control_string = optarg;
            break;
  
@@ -171,10 +93,3 @@
          case ATTRIBUTES_ONLY_OPTION:
            x.data_copy_required = false;
            break;
- 
-         case DEBUG_OPTION:
-           x.debug = x.verbose = true;
-           break;
- 
-         case COPY_CONTENTS_OPTION:
-           copy_contents = true;
