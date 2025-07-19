@@ -22,7 +22,7 @@ CURRENTDIR=${PWD}
 BINDIR="${CURRENTDIR}/bin"
 
 # Target coreutils (tested version)
-COREUTILS="coreutils-9.3"
+COREUTILS="coreutils-9.4"
 
 # required on debian
 # Can be commented-out after first run
