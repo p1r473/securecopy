@@ -1,6 +1,6 @@
 --- local.mk.org
 +++ local.mk
-@@ -220,6 +220,10 @@
+@@ -220,6 +220,10 @@ src___LDADD = $(src_test_LDADD)
  src_dir_LDADD = $(src_ls_LDADD)
  src_vdir_LDADD = $(src_ls_LDADD)
  
@@ -11,3 +11,26 @@
  src_cp_LDADD += $(copy_ldadd)
  src_ginstall_LDADD += $(copy_ldadd)
  src_mv_LDADD += $(copy_ldadd)
+@@ -361,7 +365,9 @@ copy_sources = \
+   src/copy.c \
+   src/cp-hash.c \
+   src/force-link.c \
+-  src/force-link.h
++  src/force-link.h \
++  src/crcsum.c \
++  src/crc64.c
+ 
+ # Use 'ginstall' in the definition of PROGRAMS and in dependencies to avoid
+ # confusion with the 'install' target.  The install rule transforms 'ginstall'
+@@ -441,6 +447,11 @@ src_tee_SOURCES = src/tee.c src/iopoll.c
+ src_sum_SOURCES = src/sum.c src/sum.h src/digest.c
+ src_sum_CPPFLAGS = -DHASH_ALGO_SUM=1 $(AM_CPPFLAGS)
+ 
++# SecureCopy CRC programs
++src_crccp_SOURCES = src/crccp.c $(copy_sources) $(selinux_sources)
++src_crcmv_SOURCES = src/crcmv.c src/remove.c $(copy_sources) $(selinux_sources)
++src_crcsum_SOURCES = src/crcsum_cli.c src/crcsum.c src/crc64.c
++
+ src_md5sum_SOURCES = src/digest.c
+ src_md5sum_CPPFLAGS = -DHASH_ALGO_MD5=1 $(AM_CPPFLAGS)
+ src_sha1sum_SOURCES = src/digest.c
