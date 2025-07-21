@@ -1,5 +1,5 @@
---- /home/ijntema/programming/securecopy/core-utils-based/V9.3.0-beta/coreutils-9.3/src/copy.c.org	2023-04-29 19:28:37.708015264 +0200
-+++ /home/ijntema/programming/securecopy/core-utils-based/V9.3.0-beta/coreutils-9.3/src/copy.c	2023-04-29 19:28:37.716015014 +0200
+--- copy.c.org
++++ copy.c
 @@ -57,20 +57,22 @@
  #include "same.h"
  #include "savedir.h"
@@ -23,10 +23,9 @@
  # include <attr/libattr.h>
  # include <stdarg.h>
  # include "verror.h"
-@@ -1242,28 +1244,88 @@
+@@ -1173,27 +1175,87 @@
    int dest_errno;
    int source_desc;
-   mode_t src_mode = src_sb->st_mode;
    mode_t extra_permissions;
    struct stat sb;
    struct stat src_open_sb;

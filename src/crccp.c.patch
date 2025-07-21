@@ -58,7 +58,7 @@
                             long_opts, nullptr))
           != -1)
      {
-@@ -1036,6 +1050,34 @@
+@@ -1050,6 +1064,34 @@
              version_control_string = optarg;
            break;
  
