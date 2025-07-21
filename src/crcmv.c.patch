@@ -13,24 +13,26 @@
  
  #define AUTHORS \
    proper_name ("Mike Parker"), \
-@@ -68,6 +71,7 @@
+@@ -68,6 +71,8 @@
  static struct option const long_options[] =
  {
    {"backup", optional_argument, nullptr, 'b'},
 +  {"crc", optional_argument, nullptr, 'c'},
++  {"crc-force", no_argument, nullptr, 'C'},
    {"context", no_argument, nullptr, 'Z'},
    {"debug", no_argument, nullptr, DEBUG_OPTION},
    {"force", no_argument, nullptr, 'f'},
-@@ -117,6 +121,8 @@
+@@ -117,6 +122,9 @@
  
    cp_options_default (x);
    x->copy_as_regular = false;  /* FIXME: maybe make this an option */
 +  x->crc = false;
 +  x->crc_with_xattr = false;
++  x->crc_force_validate = false;
    x->reflink_mode = REFLINK_AUTO;
    x->dereference = DEREF_NEVER;
    x->unlink_dest_before_opening = false;
-@@ -269,6 +275,11 @@
+@@ -269,6 +277,12 @@
        --backup[=CONTROL]       make a backup of each existing destination file\
  \n\
    -b                           like --backup but does not accept an argument\n\
@@ -39,26 +41,27 @@
 +                               store checksum in xattr of src and des\n\
 +                               See also tool <crcsum> in same secure copy package\n\
 +                               implies --preserve=xattr\n\
++  -C --crc-force               always validate CRC, even if mtime unchanged (use with -cx)\n\
  "), stdout);
        fputs (_("\
        --debug                  explain how a file is copied.  Implies -v\n\
-@@ -340,7 +351,7 @@
+@@ -340,7 +354,7 @@
    /* Try to disable the ability to unlink a directory.  */
    priv_set_remove_linkdir ();
  
 -  while ((c = getopt_long (argc, argv, "bfint:uvS:TZ", long_options, nullptr))
-+  while ((c = getopt_long (argc, argv, "bc::fint:uvS:TZ", long_options, nullptr))
++  while ((c = getopt_long (argc, argv, "bc::Cfint:uvS:TZ", long_options, nullptr))
           != -1)
      {
        switch (c)
-@@ -350,6 +361,29 @@
+@@ -350,6 +364,36 @@
            if (optarg)
              version_control_string = optarg;
            break;
 +        case 'c':
 +          if (optarg)
 +          {
-+            if ( strcmp( optarg, "x") == 0 )
++            if (strcmp(optarg, "x") == 0 || (optarg[0] == 'x' && strchr("Cbfint:uvS:TZ", optarg[1])))
 +            {
 +              x.crc_with_xattr = true;
 +              x.crc = false;
@@ -70,6 +73,10 @@
 +              if (selinux_enabled)
 +                x.preserve_security_context = true;
 +              x.preserve_xattr = true;
++              
++              // If optarg is "xC", also set crc_force_validate
++              if (strcmp(optarg, "xC") == 0)
++                x.crc_force_validate = true;
 +            }
 +          }
 +          else
@@ -78,6 +85,23 @@
 +            x.crc_with_xattr = false;
 +          }
 +          break;
++        case 'C':
++          x.crc_force_validate = true;
++          break;
          case 'f':
            x.interactive = I_ALWAYS_YES;
            break;
+@@ -426,6 +454,13 @@
+         }
+     }
+ 
++  /* HIJN - Validate that -C is used with -c */
++  if (x.crc_force_validate && !x.crc && !x.crc_with_xattr)
++    {
++      error (0, 0, _("-C (--crc-force) requires -c or -cx to be specified"));
++      usage (EXIT_FAILURE);
++    }
++
+   n_files = argc - optind;
+   file = argv + optind;
+

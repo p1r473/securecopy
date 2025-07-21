@@ -1,6 +1,6 @@
 --- copy.h.org
 +++ copy.h
-@@ -110,20 +110,28 @@
+@@ -110,20 +110,32 @@
     following programs: mv (when rename doesn't work), cp, install.
     So, if you add a new member, be sure to initialize it in
     mv.c, cp.c, and install.c.  */
@@ -18,6 +18,10 @@
 +  /* HIJN */
 +  /* As crc, nut use xattr to get (fresh) crc or if empty/stale, update crc */
 +  bool crc_with_xattr;
++
++  /* HIJN */
++  /* Force CRC validation even if mtime hasn't changed */
++  bool crc_force_validate;
 +
    /* This value is used to determine whether to prompt before removing
       each existing destination file.  It works differently depending on
