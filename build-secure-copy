@@ -22,7 +22,7 @@ CURRENTDIR=${PWD}
 BINDIR="${CURRENTDIR}/bin"
 
 # Target coreutils (tested version)
-COREUTILS="coreutils-9.4"
+COREUTILS="coreutils-9.7"
 
 # required on debian
 # Can be commented-out after first run
@@ -34,7 +34,7 @@ apt-get update && apt-get install -y --no-install-recommends -qq \
         texinfo \
         ca-certificates \
         wget \
-        libattr1-dev \ 
+        libattr1-dev \
         xattr \
         musl \
         musl-dev \
