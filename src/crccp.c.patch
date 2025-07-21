@@ -51,11 +51,29 @@
    x->dereference = DEREF_UNDEFINED;
    x->unlink_dest_before_opening = false;
    x->unlink_dest_after_failed_open = false;
-@@ -995,7 +1011,8 @@
+@@ -995,7 +1011,26 @@
    selinux_enabled = (0 < is_selinux_enabled ());
    cp_option_init (&x);
  
 -  while ((c = getopt_long (argc, argv, "abdfHilLnprst:uvxPRS:TZ",
++  /* HIJN - Pre-process arguments to normalize -c -x -C combinations */
++  for (int i = 1; i < argc; i++)
++    {
++      if (argv[i][0] == '-' && argv[i][1] != '-' && argv[i][1] != '\0')
++        {
++          // Check if this arg contains c, x, and C in any order
++          char *has_c = strchr(argv[i], 'c');
++          char *has_x = strchr(argv[i], 'x');
++          char *has_C = strchr(argv[i], 'C');
++          
++          if (has_c && has_x && has_C)
++            {
++              // Rewrite to canonical form -cxC
++              strcpy(argv[i], "-cxC");
++            }
++        }
++    }
++
 +  /* HIJN */
 +  while ((c = getopt_long (argc, argv, "abc::CdfHilLnprst:uvxPRS:TZ",
                             long_opts, nullptr))

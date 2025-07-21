@@ -45,16 +45,35 @@
  "), stdout);
        fputs (_("\
        --debug                  explain how a file is copied.  Implies -v\n\
-@@ -340,7 +354,7 @@
+@@ -340,7 +354,26 @@
    /* Try to disable the ability to unlink a directory.  */
    priv_set_remove_linkdir ();
  
 -  while ((c = getopt_long (argc, argv, "bfint:uvS:TZ", long_options, nullptr))
++  /* HIJN - Pre-process arguments to normalize -c -x -C combinations */
++  for (int i = 1; i < argc; i++)
++    {
++      if (argv[i][0] == '-' && argv[i][1] != '-' && argv[i][1] != '\0')
++        {
++          // Check if this arg contains c, x, and C in any order
++          char *has_c = strchr(argv[i], 'c');
++          char *has_x = strchr(argv[i], 'x');
++          char *has_C = strchr(argv[i], 'C');
++          
++          if (has_c && has_x && has_C)
++            {
++              // Rewrite to canonical form -cxC
++              strcpy(argv[i], "-cxC");
++            }
++        }
++    }
++
++  /* HIJN */
 +  while ((c = getopt_long (argc, argv, "bc::Cfint:uvS:TZ", long_options, nullptr))
           != -1)
      {
        switch (c)
-@@ -350,6 +364,36 @@
+@@ -378,6 +411,36 @@
            if (optarg)
              version_control_string = optarg;
            break;
@@ -91,7 +110,7 @@
          case 'f':
            x.interactive = I_ALWAYS_YES;
            break;
-@@ -426,6 +454,13 @@
+@@ -426,6 +489,13 @@
          }
      }
  
@@ -104,4 +123,3 @@
 +
    n_files = argc - optind;
    file = argv + optind;
-
