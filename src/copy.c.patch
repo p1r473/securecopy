@@ -68,8 +68,8 @@
 +    {
 +      // suppress errors writing crc in source xattr, as file can be read only or filesystem might not support xattr
 +      bool bError = false;
-+
 +      // CRC is stale & get new CRC
++      crc_src = CalculateCRC64(src_name);
 +      if ( !bPutCRC(src_name, &crc_src, bError) )
 +      {
 +        // Don't print an error, as source file can be a read only file, which is a legitimate use case
@@ -203,7 +203,7 @@
 +    {
 +      if ( !IsFreshCRC(dst_name) ) // UPDATE CRC when stale
 +      {
-+         // suppress errors writing crc in destination xattr, as destination filesystem might not support xattr
++        // suppress errors writing crc in destination xattr, as destination filesystem might not support xattr
 +        bool bError = false;
 +        // CRC is stale & get new CRC
 +        crc_src = CalculateCRC64(src_name); 
