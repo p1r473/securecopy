@@ -206,7 +206,7 @@
 +        // suppress errors writing crc in destination xattr, as destination filesystem might not support xattr
 +        bool bError = false;
 +        // CRC is stale & get new CRC
-+        crc_src = CalculateCRC64(src_name); 
++
 +        if ( !bPutCRC(dst_name, &crc_des, bError) )
 +        {
 +          if (x->verbose)
