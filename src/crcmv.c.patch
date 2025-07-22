@@ -1,7 +1,6 @@
 --- mv.c
 +++ crcmv.c
-@@ -37,8 +37,11 @@
- #include "targetdir.h"
+@@ -36,9 +36,14 @@
  #include "priv-set.h"
  
 +/* HIJN */
@@ -9,24 +8,32 @@
 +
  /* The official name of this program (e.g., no 'g' prefix).  */
 -#define PROGRAM_NAME "mv"
++/* HIJN */
 +#define PROGRAM_NAME "crcmv"
  
  #define AUTHORS \
    proper_name ("Mike Parker"), \
-@@ -68,6 +71,7 @@
+   proper_name ("David MacKenzie"), \
+-  proper_name ("Jim Meyering")
++  proper_name ("Jim Meyering"), \
++  proper_name ("Checksum functionality only: Hans IJntema")
+@@ -68,6 +71,8 @@
  static struct option const long_options[] =
  {
    {"backup", optional_argument, nullptr, 'b'},
++  /* HIJN */
 +  {"crc", optional_argument, nullptr, 'c'},
    {"context", no_argument, nullptr, 'Z'},
    {"debug", no_argument, nullptr, DEBUG_OPTION},
    {"force", no_argument, nullptr, 'f'},
-@@ -117,6 +121,8 @@
+@@ -117,6 +121,10 @@
  
    cp_options_default (x);
    x->copy_as_regular = false;  /* FIXME: maybe make this an option */
++  /* HIJN */
 +  x->crc = false;
 +  x->crc_with_xattr = false;
++  /* END HIJN */
    x->reflink_mode = REFLINK_AUTO;
    x->dereference = DEREF_NEVER;
    x->unlink_dest_before_opening = false;
@@ -42,19 +49,22 @@
  "), stdout);
        fputs (_("\
        --debug                  explain how a file is copied.  Implies -v\n\
-@@ -340,7 +351,7 @@
+@@ -340,7 +351,8 @@
    /* Try to disable the ability to unlink a directory.  */
    priv_set_remove_linkdir ();
  
 -  while ((c = getopt_long (argc, argv, "bfint:uvS:TZ", long_options, nullptr))
++  /* HIJN */
 +  while ((c = getopt_long (argc, argv, "bc::fint:uvS:TZ", long_options, nullptr))
           != -1)
      {
        switch (c)
-@@ -350,6 +361,29 @@
+@@ -350,6 +361,35 @@
            if (optarg)
              version_control_string = optarg;
            break;
++
++        /* HIJN */
 +        case 'c':
 +          if (optarg)
 +          {
@@ -62,6 +72,8 @@
 +            {
 +              x.crc_with_xattr = true;
 +              x.crc = false;
++
++              // will this stick if --no-preserve=xattr?
 +              x.preserve_mode = true;
 +              x.preserve_timestamps = true;
 +              x.preserve_ownership = true;
@@ -78,6 +90,8 @@
 +            x.crc_with_xattr = false;
 +          }
 +          break;
++        /* END HIJN */
++
          case 'f':
            x.interactive = I_ALWAYS_YES;
            break;
