@@ -45,7 +45,7 @@
                         | (x->dereference == DEREF_NEVER ? O_NOFOLLOW : 0)));
 +
 +/* HIJN */
-+// Checksum
++  printf("DEBUG copy.c: crc=%d, crc_with_xattr=%d, crc_force_validate=%d, verbose=%d\n", x->crc, x->crc_with_xattr, x->crc_force_validate, x->verbose);
 +  if (x->crc)
 +  {
 +    crc_src = CalculateCRC64(src_name);
@@ -63,39 +63,39 @@
 +  }
 +
 +  if (x->crc_with_xattr)
-+  {
++  { printf("DEBUG: IsFreshCRC(%s) = %d, crc_force_validate = %d\n", src_name, IsFreshCRC(src_name), x->crc_force_validate);
 +    // Force validation if crc_force_validate is set, or if CRC is stale
 +    if ( x->crc_force_validate || !IsFreshCRC(src_name) ) // UPDATE CRC when stale
 +    {
 +      // suppress errors writing crc in source xattr, as file can be read only or filesystem might not support xattr
 +      bool bError = false;
-+
 +      // CRC is stale & get new CRC
-+      crc_src = CalculateCRC64(src_name);
-+      if ( !bPutCRC(src_name, &crc_src, bError) )
-+      {
++      crc_src = CalculateCRC64(src_name); printf("DEBUG: Calculated CRC = %016llX\n", crc_src);
++      // Only try to write to xattr if not forcing validation (since force means we don't trust xattr)
++      if ( !x->crc_force_validate && !bPutCRC(src_name, &crc_src, bError) )
++      { printf("DEBUG: Failed to update xattr\n");
 +        // Don't print an error, as source file can be a read only file, which is a legitimate use case
 +        if (x->verbose)
 +          printStatus(src_name, "WARNING: FAILED to update CRC; file is read-only?", YELLOW);
 +      }
-+      else if (x->verbose)
++      else if (x->verbose && !x->crc_force_validate)
 +      {
 +        textcolor(BRIGHT,YELLOW,BLACK);
 +        printf("Updated CRC");
 +        RESET_TEXT();
 +      }
 +    }
++    else if (x->crc_force_validate)
++      printf("DEBUG: Skipped xattr update due to -C flag\n");
 +    else
 +    {
-+      crc_src = getCRC(src_name);
++      crc_src = getCRC(src_name); printf("DEBUG: Using stored CRC = %016llX\n", crc_src);
 +    }
-+
 +    if (x->verbose)
 +    {
 +      char* szCRC;
 +      int   ret;
 +      ret = asprintf(&szCRC, "%016llX", crc_src);
-+
 +      if ( ret != -1)
 +      {
 +        printf("[%s]", szCRC);

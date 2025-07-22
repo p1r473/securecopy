@@ -51,7 +51,7 @@
    x->dereference = DEREF_UNDEFINED;
    x->unlink_dest_before_opening = false;
    x->unlink_dest_after_failed_open = false;
-@@ -995,7 +1011,26 @@
+@@ -995,7 +1011,30 @@
    selinux_enabled = (0 < is_selinux_enabled ());
    cp_option_init (&x);
  
@@ -68,8 +68,12 @@
 +          
 +          if (has_c && has_x && has_C)
 +            {
-+              // Rewrite to canonical form -cxC
-+              strcpy(argv[i], "-cxC");
++              printf("DEBUG: Original arg: %s\n", argv[i]);
++              char new_arg[256] = "-"; int pos = 1;
++              for (char *p = argv[i] + 1; *p; p++)
++                if (*p != 'c' && *p != 'x' && *p != 'C') new_arg[pos++] = *p;
++              strcpy(new_arg + pos, "cxC"); strcpy(argv[i], new_arg);
++              printf("DEBUG: Rewritten to: %s\n", argv[i]);
 +            }
 +        }
 +    }
@@ -86,9 +90,9 @@
 +        /* HIJN */
 +        case 'c':
 +          if (optarg)
-+          {
++          {printf("DEBUG: case 'c', optarg = %s\n", optarg ? optarg : "NULL");
 +            if (strcmp(optarg, "x") == 0 || (optarg[0] == 'x' && strchr("CabdfHilLnprst:uvxPRS:TZ", optarg[1])))
-+            {
++            { printf("DEBUG: Setting crc_with_xattr = true\n");
 +              x.crc_with_xattr = true;
 +              x.crc = false;
 +
@@ -104,11 +108,11 @@
 +              
 +              // If optarg is "xC", also set crc_force_validate
 +              if (strcmp(optarg, "xC") == 0)
-+                x.crc_force_validate = true;
++                { printf("DEBUG: Setting crc_force_validate = true from optarg\n"); x.crc_force_validate = true; }
 +            }
 +          }
 +          else
-+          {
++          { printf("DEBUG: Setting crc = true (no optarg)\n");
 +            x.crc = true;
 +            x.crc_with_xattr = false;
 +          }
@@ -117,7 +121,7 @@
 +
 +        /* HIJN */
 +        case 'C':
-+          x.crc_force_validate = true;
++          printf("DEBUG: case 'C', setting crc_force_validate = true\n");; x.crc_force_validate = true;
 +          break;
 +
          case ATTRIBUTES_ONLY_OPTION:
